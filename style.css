@@ -1,0 +1,121 @@
+/* style.css */
+
+/* Definición de la paleta de colores personalizada */
+:root {
+  --color-primary-cream: #f5f5dc; /* Blanco cremoso */
+  --color-secondary-gold: #ffd700; /* Dorado */
+  --color-accent-terracotta: #cd5c5c; /* Terracota / Rojo óxido */
+  --color-dark-brown: #5a382c; /* Marrón oscuro */
+  --color-light-brown: #a52a2a; /* Marrón claro */
+  --color-green-olive: #808000; /* Verde oliva */
+}
+
+/* Aplicar colores a clases de Tailwind o elementos HTML */
+body {
+  background-color: var(--color-primary-cream);
+  color: var(--color-dark-brown);
+}
+
+.text-primary-cream {
+  color: var(--color-primary-cream);
+}
+.text-gold-500 {
+  color: var(--color-secondary-gold);
+} /* Usamos 500 para integrar con la convención de Tailwind */
+.bg-gold-500 {
+  background-color: var(--color-secondary-gold);
+}
+.hover\:bg-gold-600:hover {
+  background-color: #e6c200;
+} /* Un tono más oscuro para el hover */
+.border-gold-500 {
+  border-color: var(--color-secondary-gold);
+}
+.border-gold-600 {
+  border-color: #e6c200;
+}
+
+.text-accent-terracotta {
+  color: var(--color-accent-terracotta);
+}
+.bg-accent-terracotta {
+  background-color: var(--color-accent-terracotta);
+}
+.hover\:bg-red-700:hover {
+  background-color: #b22222;
+} /* Un rojo más oscuro para el hover */
+
+.text-dark-brown {
+  color: var(--color-dark-brown);
+}
+.text-light-brown {
+  color: var(--color-light-brown);
+}
+
+/* Estilos para el scrollbar en la lista de empleados */
+#employeeList::-webkit-scrollbar {
+  width: 8px;
+}
+
+#employeeList::-webkit-scrollbar-track {
+  background: var(--color-primary-cream);
+  border-radius: 10px;
+}
+
+#employeeList::-webkit-scrollbar-thumb {
+  background: var(--color-light-brown);
+  border-radius: 10px;
+}
+
+#employeeList::-webkit-scrollbar-thumb:hover {
+  background: var(--color-dark-brown);
+}
+
+/* Estilos para la tabla de horarios */
+#scheduleGrid table {
+  border-collapse: collapse; /* Para que los bordes de las celdas se unan */
+}
+
+#scheduleGrid th,
+#scheduleGrid td {
+  padding: 12px 16px;
+  border: 1px solid var(--color-primary-cream); /* Bordes más suaves */
+  vertical-align: top;
+  text-align: center; /* Centrar el contenido de las celdas de asignación */
+}
+
+#scheduleGrid td {
+  height: 80px; /* Altura fija para las celdas del turno */
+  min-width: 150px; /* Ancho mínimo para las celdas del turno */
+  cursor: pointer; /* Indica que la celda es interactiva */
+  transition: background-color 0.2s ease-in-out;
+}
+
+#scheduleGrid td:hover {
+  background-color: #fffacd; /* Un tono más claro al pasar el ratón */
+}
+
+#scheduleGrid tbody tr:nth-child(even) {
+  background-color: #f8f8f8; /* Un poco de sombreado en filas alternas */
+}
+#scheduleGrid tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Estilo para empleados asignados dentro de la celda */
+.assigned-employee-tag {
+  display: inline-block;
+  background-color: var(--color-green-olive);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 9999px; /* Píldora */
+  margin: 2px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.assigned-employee-tag:hover {
+  background-color: #6b8e23; /* Un verde oliva más oscuro al pasar el ratón */
+}
