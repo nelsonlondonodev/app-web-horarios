@@ -119,3 +119,95 @@ body {
 .assigned-employee-tag:hover {
   background-color: #6b8e23; /* Un verde oliva más oscuro al pasar el ratón */
 }
+
+/* style.css */
+
+/* ... (código anterior) ... */
+
+/* Estilos para el elemento que se está arrastrando */
+.dragging {
+  opacity: 0.5; /* Hace el elemento semitransparente mientras se arrastra */
+  border: 2px dashed var(--color-dark-brown); /* Borde punteado */
+}
+
+/* Estilos para la celda de destino cuando se arrastra un elemento sobre ella */
+.drag-over {
+  background-color: #e0e0a0 !important; /* Un amarillo suave para resaltar la celda */
+  border: 2px dashed var(--color-green-olive); /* Borde punteado verde */
+}
+
+/* --- Estilos para el Modal de Reportes --- */
+
+/* Fondo oscuro y fijo del modal */
+#reportModal {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Contenido del modal (tarjeta blanca) */
+#reportModal > div {
+  transform: translateY(-20px); /* Inicialmente un poco arriba para animación */
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 0; /* Inicialmente transparente */
+}
+
+/* Estado activo del modal (visible) */
+#reportModal.active {
+  display: flex; /* Cambiamos de hidden a flex */
+  opacity: 1; /* Fondo opaco */
+}
+
+/* Contenido del modal activo (animación de entrada) */
+#reportModal.active > div {
+  transform: translateY(0); /* Vuelve a su posición normal */
+  opacity: 1; /* Se vuelve completamente visible */
+}
+
+/* Estilos generales para listas dentro de reportes */
+#reportModalContent ul {
+  list-style: none; /* Quitamos viñetas por defecto */
+  padding: 0;
+}
+
+#reportModalContent ul li {
+  background-color: var(
+    --color-primary-cream
+  ); /* Color de fondo suave para ítems */
+  margin-bottom: 8px; /* Espaciado entre ítems */
+  padding: 10px 15px; /* Relleno */
+  border-radius: 5px; /* Bordes redondeados */
+  font-size: 1.1rem; /* Tamaño de fuente */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#reportModalContent ul li:hover {
+  background-color: #eeeedd; /* Un tono un poco más oscuro al pasar el ratón */
+}
+
+/* Estilos para los títulos de sección dentro de reportes (ej. Lunes) */
+#reportModalContent .report-section h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  color: var(--color-light-brown); /* Color que evoca el queso */
+}
+
+/* Estilos para los botones de opción de reporte (ej. Reporte General) */
+#reportModalContent .report-option-btn {
+  /* Aplicamos clases de Tailwind directamente */
+  @apply bg-gold-500 hover:bg-gold-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out w-full mb-4 text-center;
+}
+
+/* Estilos para el botón de regresar en reportes específicos */
+#reportModalContent .report-back-btn {
+  /* Aplicamos clases de Tailwind directamente */
+  @apply bg-gray-300 hover:bg-gray-400 text-dark-brown font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out mt-6 mr-2;
+}
+
+/* Estilos para los ítems de selección en listas de opciones (empleados, turnos) */
+#reportModalContent .report-option-list-item {
+  /* Aplicamos clases de Tailwind directamente */
+  @apply p-3 border border-gold-300 rounded-md mb-2 cursor-pointer hover:bg-gold-100 transition-colors duration-200;
+}

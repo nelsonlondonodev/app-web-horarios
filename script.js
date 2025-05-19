@@ -1,16 +1,23 @@
 // script.js
 
-// --- 1. Elementos del DOM (No hay cambios aquí) ---
+// --- 1. Elementos del DOM ---
 const employeeNameInput = document.getElementById("employeeNameInput");
 const addEmployeeBtn = document.getElementById("addEmployeeBtn");
 const employeeListUl = document.getElementById("employeeList");
 const scheduleBody = document.getElementById("scheduleBody");
 const clearScheduleBtn = document.getElementById("clearScheduleBtn");
+const generateReportBtn = document.getElementById("generateReportBtn"); // Nuevo: Botón de reporte
+
+// Nuevo: Elementos del DOM para el Modal de Reportes
+const reportModal = document.getElementById("reportModal");
+const closeModalBtn = document.getElementById("closeModalBtn");
+const reportModalTitle = document.getElementById("reportModalTitle");
+const reportModalContent = document.getElementById("reportModalContent");
 
 // --- 2. Variables de Estado Globales ---
 let employees = [];
 let schedule = {};
-let selectedEmployeeId = null; // Mantenemos esta variable para la funcionalidad de clic-y-asignar
+let selectedEmployeeId = null;
 
 const DAYS_OF_WEEK = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 const SHIFTS = [
@@ -20,7 +27,7 @@ const SHIFTS = [
 ];
 const MAX_EMPLOYEES = 50;
 
-// --- 3. Funciones de Utilidad (No hay cambios aquí, excepto showToast que ya estaba) ---
+// --- 3. Funciones de Utilidad ---
 
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -86,12 +93,8 @@ function showToast(message, type = "info") {
   }, 3000);
 }
 
-// --- 4. Funciones de Renderizado de la UI (MODIFICADAS) ---
+// --- 4. Funciones de Renderizado de la UI ---
 
-/**
- * Renderiza la lista de empleados en el aside.
- * Ahora añade el atributo draggable y los event listeners de drag.
- */
 function renderEmployeeList() {
   employeeListUl.innerHTML = "";
   employees.forEach((employee) => {
@@ -104,11 +107,9 @@ function renderEmployeeList() {
                             : "bg-white hover:bg-primary-cream"
                         }`;
     li.setAttribute("data-employee-id", employee.id);
-    li.setAttribute("draggable", "true"); // ¡Hacemos el elemento arrastrable!
+    li.setAttribute("draggable", "true");
 
-    // Evento de inicio de arrastre
     li.addEventListener("dragstart", handleDragStart);
-    // Evento de fin de arrastre (para limpieza de estilos)
     li.addEventListener("dragend", handleDragEnd);
 
     const employeeNameSpan = document.createElement("span");
@@ -126,16 +127,11 @@ function renderEmployeeList() {
     };
     li.appendChild(deleteBtn);
 
-    // Mantenemos la funcionalidad de clic para seleccionar
     li.onclick = () => selectEmployee(employee.id);
     employeeListUl.appendChild(li);
   });
 }
 
-/**
- * Renderiza la cuadrícula de horarios.
- * Ahora añade los event listeners de drag para las celdas de destino.
- */
 function renderScheduleGrid() {
   scheduleBody.innerHTML = "";
 
@@ -155,12 +151,10 @@ function renderScheduleGrid() {
       td.setAttribute("data-day", day);
       td.setAttribute("data-shift", shift.name);
 
-      // ¡Añadimos los event listeners de arrastre y soltado a las celdas!
       td.addEventListener("dragover", handleDragOver);
       td.addEventListener("dragleave", handleDragLeave);
       td.addEventListener("drop", handleDrop);
 
-      // Mostrar empleados asignados a este turno y día
       const assignedEmployeeIds = schedule[day][shift.name] || [];
       assignedEmployeeIds.forEach((empId) => {
         const employee = employees.find((e) => e.id === empId);
@@ -183,7 +177,6 @@ function renderScheduleGrid() {
       countSpan.textContent = `(${assignedEmployeeIds.length})`;
       td.appendChild(countSpan);
 
-      // Mantenemos la funcionalidad de clic para asignar (usando el empleado seleccionado)
       td.onclick = () => assignSelectedEmployee(day, shift.name);
       tr.appendChild(td);
     });
@@ -191,16 +184,8 @@ function renderScheduleGrid() {
   });
 }
 
-// --- 5. Funciones de Gestión de Datos y Eventos (MODIFICADAS Y AÑADIDAS) ---
+// --- 5. Funciones de Gestión de Datos y Eventos ---
 
-// Refactorizamos la lógica central de asignación en una función reutilizable
-/**
- * Intenta asignar un empleado a un turno, con detección de conflictos.
- * @param {string} employeeId - ID del empleado a asignar.
- * @param {string} day - Día de la semana.
- * @param {string} shiftName - Nombre del turno.
- * @returns {boolean} True si la asignación fue exitosa, false si hubo un conflicto.
- */
 function attemptAssignEmployee(employeeId, day, shiftName) {
   const employeeToAssign = employees.find((emp) => emp.id === employeeId);
   if (!employeeToAssign) {
@@ -210,13 +195,11 @@ function attemptAssignEmployee(employeeId, day, shiftName) {
 
   const currentShiftAssignments = schedule[day][shiftName];
 
-  // 1. Verificar si el empleado ya está en este turno
   if (currentShiftAssignments.includes(employeeId)) {
     showToast(`"${employeeToAssign.name}" ya está en este turno.`, "info");
     return false;
   }
 
-  // 2. Verificar si el empleado ya está en otro turno el mismo día (Detección de Conflictos)
   for (const s of SHIFTS) {
     if (s.name !== shiftName && schedule[day][s.name].includes(employeeId)) {
       showToast(
@@ -227,7 +210,6 @@ function attemptAssignEmployee(employeeId, day, shiftName) {
     }
   }
 
-  // Si no hay conflictos, proceder con la asignación
   schedule[day][shiftName].push(employeeId);
   saveData();
   renderScheduleGrid();
@@ -275,10 +257,6 @@ function deleteEmployee(employeeId) {
   showToast("Empleado eliminado y desasignado de todos los turnos.", "info");
 }
 
-/**
- * Selecciona un empleado para su asignación con clic.
- * @param {string} employeeId - ID del empleado a seleccionar.
- */
 function selectEmployee(employeeId) {
   if (selectedEmployeeId === employeeId) {
     selectedEmployeeId = null;
@@ -295,12 +273,6 @@ function selectEmployee(employeeId) {
   renderEmployeeList();
 }
 
-/**
- * Asigna el empleado seleccionado por clic a un turno específico.
- * Llama a la nueva función centralizada de asignación.
- * @param {string} day - Día de la semana.
- * @param {string} shiftName - Nombre del turno.
- */
 function assignSelectedEmployee(day, shiftName) {
   if (!selectedEmployeeId) {
     showToast("Por favor, selecciona un empleado primero.", "error");
@@ -309,7 +281,7 @@ function assignSelectedEmployee(day, shiftName) {
 
   const assigned = attemptAssignEmployee(selectedEmployeeId, day, shiftName);
   if (assigned) {
-    selectedEmployeeId = null; // Deseleccionar después de asignar si fue exitoso
+    selectedEmployeeId = null;
     renderEmployeeList();
   }
 }
@@ -337,20 +309,13 @@ function clearAllSchedule() {
   }
 }
 
-// --- NUEVAS FUNCIONES PARA DRAG-AND-DROP ---
+// --- FUNCIONES PARA DRAG-AND-DROP ---
 
-let draggedEmployeeId = null; // Variable para almacenar el ID del empleado que se está arrastrando
+let draggedEmployeeId = null;
 
-/**
- * Manejador del evento dragstart (cuando un elemento empieza a arrastrarse).
- * @param {Event} event - El evento de arrastre.
- */
 function handleDragStart(event) {
-  // Obtenemos el ID del empleado desde el atributo data-employee-id del li
   draggedEmployeeId = event.target.dataset.employeeId;
-  // Establecemos los datos a transferir (ID del empleado)
   event.dataTransfer.setData("text/plain", draggedEmployeeId);
-  // Añadimos una clase visual para indicar que el elemento se está arrastrando
   event.target.classList.add("dragging");
   showToast(
     `Arrastrando a "${
@@ -360,62 +325,265 @@ function handleDragStart(event) {
   );
 }
 
-/**
- * Manejador del evento dragover (cuando un elemento arrastrado pasa por encima de un objetivo).
- * @param {Event} event - El evento de arrastre.
- */
 function handleDragOver(event) {
-  event.preventDefault(); // ¡Esto es crucial para permitir que se pueda soltar el elemento!
-  // Añadimos una clase visual para resaltar el objetivo de soltado
+  event.preventDefault();
   event.target.classList.add("drag-over");
 }
 
-/**
- * Manejador del evento dragleave (cuando un elemento arrastrado sale de un objetivo).
- * @param {Event} event - El evento de arrastre.
- */
 function handleDragLeave(event) {
-  // Removemos la clase visual cuando el elemento arrastrado sale del objetivo
   event.target.classList.remove("drag-over");
 }
 
-/**
- * Manejador del evento drop (cuando un elemento arrastrado se suelta sobre un objetivo).
- * @param {Event} event - El evento de arrastre.
- */
 function handleDrop(event) {
-  event.preventDefault(); // Prevenimos el comportamiento por defecto (ej. abrir como enlace)
-  // Removemos la clase visual del objetivo
+  event.preventDefault();
   event.target.classList.remove("drag-over");
 
-  // Obtenemos el ID del empleado que fue arrastrado
   const employeeIdToAssign = event.dataTransfer.getData("text/plain");
-  // Obtenemos el día y el turno de la celda donde se soltó el empleado
   const day = event.target.dataset.day;
   const shiftName = event.target.dataset.shift;
 
   if (employeeIdToAssign && day && shiftName) {
-    // Llamamos a nuestra función centralizada de asignación
     attemptAssignEmployee(employeeIdToAssign, day, shiftName);
   }
-  draggedEmployeeId = null; // Limpiamos el ID del empleado arrastrado
+  draggedEmployeeId = null;
 }
 
-/**
- * Manejador del evento dragend (cuando la operación de arrastre finaliza).
- * @param {Event} event - El evento de arrastre.
- */
 function handleDragEnd(event) {
-  // Removemos la clase visual del elemento que se estaba arrastrando
   event.target.classList.remove("dragging");
-  // Si hay un elemento resaltado por drag-over que no se limpió (ej. se soltó fuera)
-  // podemos limpiar cualquier celda que aún tenga la clase 'drag-over'
   document
     .querySelectorAll(".drag-over")
     .forEach((el) => el.classList.remove("drag-over"));
 }
 
-// --- 6. Inicialización y Event Listeners (No hay cambios aquí, excepto que ahora renderizan con los nuevos eventos) ---
+// --- NUEVAS FUNCIONES PARA REPORTES ---
+
+/**
+ * Muestra la modal de reportes con las opciones iniciales.
+ */
+function showReportModal() {
+  reportModalTitle.textContent = "Generar Reporte";
+  reportModalContent.innerHTML = `
+        <div class="space-y-4">
+            <button id="reportOverallBtn" class="report-option-btn"><i class="fas fa-calendar-week mr-2"></i> Reporte General Semanal</button>
+            <button id="reportByEmployeeBtn" class="report-option-btn"><i class="fas fa-user mr-2"></i> Reporte por Empleado</button>
+            <button id="reportByShiftBtn" class="report-option-btn"><i class="fas fa-clock mr-2"></i> Reporte por Turno</button>
+        </div>
+    `;
+  reportModal.classList.add("active"); // Muestra la modal
+
+  // Añadir event listeners a los nuevos botones
+  document
+    .getElementById("reportOverallBtn")
+    .addEventListener("click", generateOverallScheduleReport);
+  document
+    .getElementById("reportByEmployeeBtn")
+    .addEventListener("click", showEmployeeSelectionForReport);
+  document
+    .getElementById("reportByShiftBtn")
+    .addEventListener("click", showShiftSelectionForReport);
+}
+
+/**
+ * Oculta la modal de reportes.
+ */
+function hideReportModal() {
+  reportModal.classList.remove("active"); // Oculta la modal
+  // Resetear contenido del modal después de la transición para evitar flashes
+  setTimeout(() => {
+    reportModalContent.innerHTML = "";
+    reportModalTitle.textContent = "Generar Reporte";
+  }, 300); // Duración de la transición CSS
+}
+
+/**
+ * Genera y muestra un reporte general de todo el horario semanal.
+ */
+function generateOverallScheduleReport() {
+  reportModalTitle.textContent = "Reporte General Semanal";
+  let reportHtml = "<div>";
+
+  DAYS_OF_WEEK.forEach((day) => {
+    reportHtml += `<div class="report-section mb-4"><h4>${day}</h4>`;
+    SHIFTS.forEach((shift) => {
+      const assignedEmployees = schedule[day][shift.name]
+        .map(
+          (empId) =>
+            employees.find((e) => e.id === empId)?.name ||
+            "Empleado Desconocido"
+        )
+        .join(", ");
+
+      reportHtml += `<p class="ml-4"><span class="font-semibold">${
+        shift.name
+      } (${shift.time}):</span> ${
+        assignedEmployees || "Ningún empleado asignado"
+      }</p>`;
+    });
+    reportHtml += "</div>";
+  });
+
+  reportHtml += `
+        <div class="flex justify-start mt-6">
+            <button class="report-back-btn" onclick="showReportModal()">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Opciones
+            </button>
+        </div>
+    </div>`;
+  reportModalContent.innerHTML = reportHtml;
+}
+
+/**
+ * Muestra la lista de empleados para seleccionar un reporte individual.
+ */
+function showEmployeeSelectionForReport() {
+  reportModalTitle.textContent = "Seleccionar Empleado para Reporte";
+  let employeeListHtml = "<ul>";
+  employees.forEach((emp) => {
+    employeeListHtml += `<li class="report-option-list-item" data-employee-id="${emp.id}">${emp.name}</li>`;
+  });
+  employeeListHtml += `</ul>
+        <div class="flex justify-start mt-6">
+            <button class="report-back-btn" onclick="showReportModal()">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Opciones
+            </button>
+        </div>
+    `;
+  reportModalContent.innerHTML = employeeListHtml;
+
+  // Añadir event listeners a los ítems de la lista de empleados
+  document.querySelectorAll(".report-option-list-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      const employeeId = e.currentTarget.dataset.employeeId;
+      generateEmployeeSpecificReport(employeeId);
+    });
+  });
+}
+
+/**
+ * Genera y muestra un reporte para un empleado específico.
+ * @param {string} employeeId - ID del empleado a reportar.
+ */
+function generateEmployeeSpecificReport(employeeId) {
+  const employee = employees.find((e) => e.id === employeeId);
+  if (!employee) {
+    reportModalContent.innerHTML =
+      '<p class="text-red-500">Empleado no encontrado.</p>';
+    return;
+  }
+
+  reportModalTitle.textContent = `Reporte de Horario para ${employee.name}`;
+  let reportHtml = "<div>";
+  let hasAssignments = false;
+
+  DAYS_OF_WEEK.forEach((day) => {
+    let dayAssignments = [];
+    SHIFTS.forEach((shift) => {
+      if (schedule[day][shift.name].includes(employeeId)) {
+        dayAssignments.push(shift.name);
+        hasAssignments = true;
+      }
+    });
+
+    reportHtml += `<div class="report-section mb-2"><h4>${day}:</h4>`;
+    if (dayAssignments.length > 0) {
+      reportHtml += `<p class="ml-4">${dayAssignments.join(", ")}</p>`;
+    } else {
+      reportHtml += `<p class="ml-4 text-gray-500">Ningún turno asignado.</p>`;
+    }
+    reportHtml += "</div>";
+  });
+
+  if (!hasAssignments) {
+    reportHtml = `<p class="text-center my-8">Este empleado no tiene turnos asignados para la semana.</p>`;
+  }
+
+  reportHtml += `
+        <div class="flex justify-start mt-6">
+            <button class="report-back-btn" onclick="showEmployeeSelectionForReport()">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Empleados
+            </button>
+        </div>
+    </div>`;
+  reportModalContent.innerHTML = reportHtml;
+}
+
+/**
+ * Muestra la lista de turnos para seleccionar un reporte individual.
+ */
+function showShiftSelectionForReport() {
+  reportModalTitle.textContent = "Seleccionar Turno para Reporte";
+  let shiftListHtml = "<ul>";
+  SHIFTS.forEach((shift) => {
+    shiftListHtml += `<li class="report-option-list-item" data-shift-name="${shift.name}">${shift.name} (${shift.time})</li>`;
+  });
+  shiftListHtml += `</ul>
+        <div class="flex justify-start mt-6">
+            <button class="report-back-btn" onclick="showReportModal()">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Opciones
+            </button>
+        </div>
+    `;
+  reportModalContent.innerHTML = shiftListHtml;
+
+  // Añadir event listeners a los ítems de la lista de turnos
+  document.querySelectorAll(".report-option-list-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      const shiftName = e.currentTarget.dataset.shiftName;
+      generateShiftSpecificReport(shiftName);
+    });
+  });
+}
+
+/**
+ * Genera y muestra un reporte para un turno específico.
+ * @param {string} shiftName - Nombre del turno a reportar.
+ */
+function generateShiftSpecificReport(shiftName) {
+  const shift = SHIFTS.find((s) => s.name === shiftName);
+  if (!shift) {
+    reportModalContent.innerHTML =
+      '<p class="text-red-500">Turno no encontrado.</p>';
+    return;
+  }
+
+  reportModalTitle.textContent = `Reporte de Empleados en Turno "${shift.name}"`;
+  let reportHtml = "<div>";
+  let hasAssignments = false;
+
+  DAYS_OF_WEEK.forEach((day) => {
+    const assignedEmployeeIds = schedule[day][shift.name] || [];
+    const employeeNames = assignedEmployeeIds
+      .map(
+        (empId) =>
+          employees.find((e) => e.id === empId)?.name || "Empleado Desconocido"
+      )
+      .join(", ");
+
+    reportHtml += `<div class="report-section mb-2"><h4>${day}:</h4>`;
+    if (employeeNames) {
+      reportHtml += `<p class="ml-4">${employeeNames}</p>`;
+      hasAssignments = true;
+    } else {
+      reportHtml += `<p class="ml-4 text-gray-500">Ningún empleado asignado.</p>`;
+    }
+    reportHtml += "</div>";
+  });
+
+  if (!hasAssignments) {
+    reportHtml = `<p class="text-center my-8">Ningún empleado asignado a este turno durante la semana.</p>`;
+  }
+
+  reportHtml += `
+        <div class="flex justify-start mt-6">
+            <button class="report-back-btn" onclick="showShiftSelectionForReport()">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Turnos
+            </button>
+        </div>
+    </div>`;
+  reportModalContent.innerHTML = reportHtml;
+}
+
+// --- 6. Inicialización y Event Listeners ---
 
 document.addEventListener("DOMContentLoaded", () => {
   loadData();
@@ -430,3 +598,7 @@ employeeNameInput.addEventListener("keypress", (e) => {
   }
 });
 clearScheduleBtn.addEventListener("click", clearAllSchedule);
+
+// Nuevos Event Listeners para el sistema de reportes
+generateReportBtn.addEventListener("click", showReportModal);
+closeModalBtn.addEventListener("click", hideReportModal);
