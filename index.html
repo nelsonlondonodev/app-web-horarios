@@ -91,9 +91,16 @@
           </div>
           <p class="mt-4 text-sm text-dark-brown">
             <i class="fas fa-info-circle mr-1"></i>Haz clic en un empleado de la
-            lista y luego en una celda de turno para asignarlo.
+            lista y luego en una celda de turno para asignarlo, o arrástralo y
+            suéltalo.
           </p>
-          <div class="flex justify-end mt-6">
+          <div class="flex justify-between mt-6">
+            <button
+              id="generateReportBtn"
+              class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out flex items-center"
+            >
+              <i class="fas fa-file-alt mr-2"></i>Generar Reporte
+            </button>
             <button
               id="clearScheduleBtn"
               class="bg-accent-terracotta hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out flex items-center"
@@ -102,6 +109,30 @@
             </button>
           </div>
         </main>
+      </div>
+    </div>
+
+    <div
+      id="reportModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div
+        class="bg-white p-8 rounded-lg shadow-xl max-w-3xl w-full mx-4 relative"
+        style="max-height: 90vh; overflow-y: auto"
+      >
+        <button
+          id="closeModalBtn"
+          class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+        >
+          &times;
+        </button>
+        <h3
+          id="reportModalTitle"
+          class="text-3xl font-bold mb-6 text-accent-terracotta text-center"
+        >
+          Generar Reporte
+        </h3>
+        <div id="reportModalContent" class="text-dark-brown"></div>
       </div>
     </div>
 
